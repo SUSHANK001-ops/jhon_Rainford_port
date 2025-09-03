@@ -17,10 +17,10 @@ export default function CosmicBackground() {
 
       const size = gsap.utils.random(10, 30);
       const colors = [
-        "rgba(255, 107, 53, 0.08)", // orange
-        "rgba(0, 212, 170, 0.06)", // teal
-        "rgba(139, 92, 246, 0.05)", // purple
-        "rgba(251, 191, 36, 0.04)", // gold
+        "rgba(37, 99, 235, 0.08)", // blue
+        "rgba(59, 130, 246, 0.06)", // light blue
+        "rgba(30, 64, 175, 0.05)", // darker blue
+        "rgba(147, 197, 253, 0.04)", // very light blue
       ];
 
       orb.style.cssText = `
@@ -70,7 +70,7 @@ export default function CosmicBackground() {
       shape.style.cssText = `
         width: ${size}px;
         height: ${size}px;
-        background: linear-gradient(135deg, rgba(255,107,53,0.05), rgba(0,212,170,0.03));
+        background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(59,130,246,0.03));
         border-radius: ${isCircle ? "50%" : "10px"};
         left: ${gsap.utils.random(10, 90)}%;
         top: ${gsap.utils.random(10, 90)}%;
@@ -113,9 +113,9 @@ export default function CosmicBackground() {
         zIndex: -1,
         overflow: "hidden",
         background: `
-        radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.02) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 212, 170, 0.02) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.01) 0%, transparent 50%)
+        radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(30, 64, 175, 0.01) 0%, transparent 50%)
       `,
       }}
     >

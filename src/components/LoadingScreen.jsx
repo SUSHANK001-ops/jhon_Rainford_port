@@ -111,7 +111,7 @@ const LoadingScreen = ({ onLoadingComplete }) => {
           left: 0;
           width: 100%;
           height: 100%;
-          background: #ffffff;
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -134,20 +134,20 @@ const LoadingScreen = ({ onLoadingComplete }) => {
         .loading-icons .icon {
           width: 40px;
           height: 40px;
-          background: linear-gradient(135deg, #ff6b35, #ec4899);
+          background: linear-gradient(135deg, #2563eb, #3b82f6);
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           color: white;
-          box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
         }
 
         .loading-title {
           font-size: 2rem;
           font-weight: 700;
           color: #1e293b;
-          background: linear-gradient(135deg, #ff6b35, #ec4899);
+          background: linear-gradient(135deg, #2563eb, #3b82f6);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -163,7 +163,7 @@ const LoadingScreen = ({ onLoadingComplete }) => {
         .loading-bar-container {
           width: 250px;
           height: 3px;
-          background: #f1f5f9;
+          background: #e0f2fe;
           border-radius: 2px;
           overflow: hidden;
           margin: 0 auto;
@@ -171,7 +171,7 @@ const LoadingScreen = ({ onLoadingComplete }) => {
 
         .loading-bar {
           height: 100%;
-          background: linear-gradient(135deg, #ff6b35, #ec4899);
+          background: linear-gradient(135deg, #2563eb, #3b82f6);
           border-radius: 2px;
           transition: width 0.2s ease;
         }
