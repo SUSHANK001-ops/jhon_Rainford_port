@@ -3,8 +3,8 @@ import { IconRow } from "./Icons";
 import { useButtonRipplesReact } from "./animations";
 
 export default function Hero() {
-  useButtonRipplesReact(React);
-  return (
+    useButtonRipplesReact(React);
+    return (
     <header className="hero">
       <div className="container">
         <IconRow />
@@ -32,7 +32,7 @@ export default function Hero() {
               flexWrap: "wrap",
             }}
           >
-            {["About", "Experience", "Portfolio", "Speaking", "Contact"].map(
+            {["About", "Experience", "Portfolio", "Speaking", ].map(
               (id) => (
                 <a
                   key={id}
