@@ -12,9 +12,18 @@ export default function Skills() {
         y: () => gsap.utils.random(-30, 30),
         opacity: 0,
       });
+      const isMobile = () =>
+        typeof window !== "undefined" &&
+        (window.matchMedia?.("(max-width: 768px)").matches ||
+          ScrollTrigger.isTouch);
+
       ScrollTrigger.create({
         trigger: "#skills",
-        start: "top 80%",
+        start: isMobile() ? "top bottom" : "top 80%",
+        toggleActions: isMobile()
+          ? "play none none none"
+          : "play none none reverse",
+        once: true,
         onEnter: () => {
           gsap.to(items, {
             x: 0,
