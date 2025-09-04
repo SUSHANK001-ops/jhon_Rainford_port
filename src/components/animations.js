@@ -8,6 +8,20 @@ export function useScrollRevealsReact(React) {
   const { useEffect } = React;
   useEffect(() => {
     const ctx = gsap.context(() => {
+      const isMobile = () =>
+        typeof window !== "undefined" &&
+        (window.matchMedia?.("(max-width: 768px)").matches ||
+          ScrollTrigger.isTouch);
+
+      // On mobile, trigger as soon as the element enters the viewport to avoid late reveals
+      const startEarly = (desktop = "top 85%") =>
+        isMobile() ? "top bottom" : desktop;
+
+      const toggleMode = (
+        desktop = "play none none reverse",
+        mobile = "play none none none"
+      ) => (isMobile() ? mobile : desktop);
+
       // Enhanced reveal animations with different effects
       gsap.utils
         .toArray(".reveal, .slide-left, .slide-right, .fade-in, .scale-in")
@@ -21,63 +35,110 @@ export function useScrollRevealsReact(React) {
           const scale = el.classList.contains("scale-in") ? 0.8 : 1;
           const y = el.classList.contains("fade-in") ? 30 : x === 0 ? 20 : 0;
 
-          gsap.fromTo(
-            el,
-            {
-              opacity: 0,
-              x,
-              y,
-              scale,
-              rotationX: el.classList.contains("card") ? 45 : 0,
-            },
-            {
-              opacity: 1,
-              x: 0,
-              y: 0,
-              scale: 1,
-              rotationX: 0,
-              duration: el.classList.contains("card") ? 1 : 0.9,
-              ease: "power2.out",
+          const alreadyInView = () => {
+            const rect = el.getBoundingClientRect();
+            const vh =
+              window.innerHeight || document.documentElement.clientHeight;
+            // Consider it visible if its top is within 90% of viewport height
+            return rect.top <= vh * 0.9;
+          };
+
+          const startPos = startEarly("top 85%", "top 95%");
+          const toggle = toggleMode(
+            "play none none reverse",
+            "play none none none"
+          );
+
+          const fromVars = {
+            opacity: 0,
+            x,
+            y,
+            scale,
+            rotationX: el.classList.contains("card") ? 45 : 0,
+          };
+          const toVars = {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            scale: 1,
+            rotationX: 0,
+            duration: el.classList.contains("card") ? 1 : 0.9,
+            ease: "power2.out",
+          };
+
+          if (alreadyInView()) {
+            // Animate immediately if already visible on load
+            gsap.fromTo(el, fromVars, toVars);
+          } else {
+            gsap.fromTo(el, fromVars, {
+              ...toVars,
               scrollTrigger: {
                 trigger: el,
-                start: "top 85%",
-                toggleActions: "play none none reverse",
+                start: startPos,
+                toggleActions: toggle,
               },
-            }
-          );
+            });
+          }
         });
 
       // Text animation with typewriter effect
       gsap.utils.toArray("h1, h2, h3").forEach((heading) => {
         const text = heading.textContent;
-        heading.innerHTML = "";
 
-        gsap.fromTo(
-          heading,
-          { opacity: 0, y: 30 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: heading,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
-              onEnter: () => {
-                let i = 0;
-                const typeWriter = () => {
-                  if (i < text.length) {
-                    heading.innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(typeWriter, 50);
-                  }
-                };
-                typeWriter();
+        const alreadyInView = () => {
+          const rect = heading.getBoundingClientRect();
+          const vh =
+            window.innerHeight || document.documentElement.clientHeight;
+          return rect.top <= vh * 0.95; // very early threshold
+        };
+
+        const runTypewriter = () => {
+          heading.textContent = "";
+          let i = 0;
+          const typeWriter = () => {
+            if (i < text.length) {
+              heading.textContent += text.charAt(i);
+              i++;
+              setTimeout(typeWriter, 45);
+            }
+          };
+          typeWriter();
+        };
+
+        if (alreadyInView()) {
+          // Immediate for headings already visible
+          gsap.fromTo(
+            heading,
+            { opacity: 0, y: 20 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.5,
+              ease: "power2.out",
+              onComplete: runTypewriter,
+            }
+          );
+        } else {
+          gsap.fromTo(
+            heading,
+            { opacity: 0, y: 30 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.6,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: heading,
+                start: startEarly("top 85%", "top 95%"),
+                toggleActions: toggleMode(
+                  "play none none reverse",
+                  "play none none none"
+                ),
+                onEnter: runTypewriter,
               },
-            },
-          }
-        );
+            }
+          );
+        }
       });
 
       // Enhanced parallax effects
@@ -115,8 +176,11 @@ export function useScrollRevealsReact(React) {
             delay: index * 0.15,
             scrollTrigger: {
               trigger: item,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
+              start: startEarly("top 85%", "top 95%"),
+              toggleActions: toggleMode(
+                "play none none reverse",
+                "play none none none"
+              ),
             },
           }
         );
@@ -161,8 +225,11 @@ export function useScrollRevealsReact(React) {
             ease: "power2.out",
             scrollTrigger: {
               trigger: item,
-              start: "top 80%",
-              toggleActions: "play none none reverse",
+              start: startEarly("top 80%", "top 90%"),
+              toggleActions: toggleMode(
+                "play none none reverse",
+                "play none none none"
+              ),
             },
           }
         );
@@ -182,8 +249,11 @@ export function useScrollRevealsReact(React) {
             snap: { textContent: 1 },
             scrollTrigger: {
               trigger: stat,
-              start: "top 80%",
-              toggleActions: "play none none none",
+              start: startEarly("top 80%", "top 90%"),
+              toggleActions: toggleMode(
+                "play none none none",
+                "play none none none"
+              ),
             },
           }
         );
@@ -244,8 +314,11 @@ export function useScrollRevealsReact(React) {
             ease: "power2.out",
             scrollTrigger: {
               trigger: item,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
+              start: startEarly("top 85%", "top 95%"),
+              toggleActions: toggleMode(
+                "play none none reverse",
+                "play none none none"
+              ),
             },
           }
         );
@@ -263,8 +336,11 @@ export function useScrollRevealsReact(React) {
             ease: "power2.out",
             scrollTrigger: {
               trigger: bar,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
+              start: startEarly("top 85%", "top 95%"),
+              toggleActions: toggleMode(
+                "play none none reverse",
+                "play none none none"
+              ),
             },
           }
         );
@@ -298,9 +374,12 @@ export function useScrollRevealsReact(React) {
             ease: "power2.out",
             scrollTrigger: {
               trigger: section,
-              start: "top 80%",
-              end: "bottom 20%",
-              toggleActions: "play reverse play reverse",
+              start: startEarly("top 80%", "top 90%"),
+              end: isMobile() ? "bottom 10%" : "bottom 20%",
+              toggleActions: toggleMode(
+                "play reverse play reverse",
+                "play reverse play reverse"
+              ),
             },
           }
         );
