@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from "react";
-import { IconRow } from "./Icons";
+import React, { useEffect, useRef, useCallback, useMemo } from "react";
 import { useButtonRipplesReact } from "./animations";
 import { gsap } from "gsap";
 
@@ -7,812 +6,298 @@ export default function Hero() {
   const heroRef = useRef(null);
   const profileRef = useRef(null);
   const headingRef = useRef(null);
-  const subheadingRef = useRef(null);
   const buttonsRef = useRef(null);
-  const chipsRef = useRef(null);
   const keywordCardRef = useRef(null);
-  const backgroundRef = useRef([]);
+  const nameRefs = useRef([]);
+  const subtitleRef = useRef(null);
+  const badgeRef = useRef(null);
+
+  // Memoize media query check for better performance
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  // Reset name refs
+  nameRefs.current = [];
 
   useButtonRipplesReact(React);
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Rotating keywords
-      const keywords = ["Innovation", "Leadership", "Strategy", "Growth"];
-      let currentIndex = 0;
+  const initialized = useRef(false);
 
-      // Set initial states
-      gsap.set(
-        [
-          profileRef.current,
-          headingRef.current,
-          subheadingRef.current,
-          buttonsRef.current,
-          chipsRef.current,
-        ],
-        {
-          opacity: 0,
-          y: 60,
-        }
-      );
+  // Memoize name splitting for better performance
+  const nameLetters = useMemo(() => ({
+    john: "John".split(""),
+    rainford: "Rainford".split("")
+  }), []);
+
+  const handleButtonClick = useCallback((action) => {
+    switch (action) {
+      case 'linkedin':
+        window.open('https://linkedin.com/in/johnrainford', '_blank');
+        break;
+      case 'profile':
+        document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+        break;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
+    const ctx = gsap.context(() => {
+      // Enhanced initial states
+      gsap.set([profileRef.current, buttonsRef.current, subtitleRef.current], {
+        opacity: 0,
+        y: 60,
+      });
+
+      gsap.set(badgeRef.current, {
+        opacity: 0,
+        y: -30,
+        scale: 0.8,
+      });
+
+      gsap.set(nameRefs.current, { 
+        opacity: 0, 
+        y: 40, 
+        rotateX: 45,
+        transformOrigin: "center bottom"
+      });
 
       gsap.set(keywordCardRef.current, {
         opacity: 0,
-        scale: 0.8,
-        rotationY: 15,
+        scale: 0.7,
+        rotationY: 25,
+        transformOrigin: "center center"
       });
 
-      gsap.set(backgroundRef.current, { y: 0, rotation: 0 });
+      // Enhanced entrance timeline
+      const mainTl = gsap.timeline({ delay: 0.3 });
 
-      // Main entrance timeline
-      const mainTl = gsap.timeline({ delay: 0.6 });
-
-      // Profile photo with glowing aura
+      // Badge entrance
       mainTl
+        .to(badgeRef.current, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: prefersReducedMotion ? 0.01 : 0.8,
+          ease: "back.out(1.2)",
+        })
+        // Profile photo with enhanced animation
         .to(profileRef.current, {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 1.2,
-          ease: "back.out(1.3)",
-        })
-
-        // Heading with strong impact
+          duration: prefersReducedMotion ? 0.01 : 1.4,
+          ease: "elastic.out(1, 0.5)",
+        }, "-=0.3")
+        // Name letters with improved stagger
         .to(
-          headingRef.current,
+          nameRefs.current,
           {
             opacity: 1,
             y: 0,
-            duration: 1,
-            ease: "power3.out",
+            rotateX: 0,
+            duration: prefersReducedMotion ? 0.01 : 0.8,
+            ease: "back.out(1.5)",
+            stagger: prefersReducedMotion ? 0 : 0.08,
           },
-          "-=0.7"
+          "-=0.9"
         )
-
-        // Subheading
+        // Subtitle
         .to(
-          subheadingRef.current,
+          subtitleRef.current,
           {
             opacity: 1,
             y: 0,
-            duration: 0.8,
+            duration: prefersReducedMotion ? 0.01 : 0.6,
             ease: "power2.out",
           },
-          "-=0.5"
+          "-=0.4"
         )
-
-        // CTA buttons
+        // CTA buttons with enhanced stagger
         .to(
           buttonsRef.current.children,
           {
             opacity: 1,
             y: 0,
-            duration: 0.7,
-            stagger: 0.2,
-            ease: "back.out(1.4)",
-          },
-          "-=0.4"
-        )
-
-        // Chips
-        .to(
-          chipsRef.current.children,
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            stagger: 0.1,
-            ease: "power2.out",
+            duration: prefersReducedMotion ? 0.01 : 0.8,
+            stagger: prefersReducedMotion ? 0 : 0.15,
+            ease: "back.out(1.2)",
           },
           "-=0.3"
         )
-
-        // Keyword card
+        // Keyword card with enhanced entrance
         .to(
           keywordCardRef.current,
           {
             opacity: 1,
             scale: 1,
             rotationY: 0,
-            duration: 0.8,
-            ease: "back.out(1.2)",
+            duration: prefersReducedMotion ? 0.01 : 1,
+            ease: "elastic.out(1, 0.6)",
           },
-          "-=0.6"
+          "-=0.5"
         );
 
-      // Floating background animation
-      gsap.to(backgroundRef.current, {
-        y: "+=40",
-        rotation: "+=10",
-        duration: 8,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        stagger: {
-          amount: 2,
-          from: "random",
-        },
-      });
-
-      // Keyword rotation function
-      const rotateKeyword = () => {
-        const keywordElement =
-          keywordCardRef.current?.querySelector(".keyword-text");
-        if (keywordElement) {
-          gsap.to(keywordElement, {
-            opacity: 0,
-            y: -40,
-            scale: 0.8,
-            duration: 0.5,
-            ease: "power2.in",
-            onComplete: () => {
-              currentIndex = (currentIndex + 1) % keywords.length;
-              keywordElement.textContent = keywords[currentIndex];
-              gsap.fromTo(
-                keywordElement,
-                { opacity: 0, y: 40, scale: 0.8 },
-                {
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                  duration: 0.7,
-                  ease: "back.out(1.4)",
-                }
-              );
-            },
-          });
-        }
-      };
-
-      // Start keyword rotation
-      const keywordInterval = setInterval(rotateKeyword, 3000);
-
-      return () => {
-        clearInterval(keywordInterval);
-      };
+      // Add hover animations
+      if (!prefersReducedMotion) {
+        gsap.set(profileRef.current, { transformOrigin: "center center" });
+        
+        profileRef.current?.addEventListener('mouseenter', () => {
+          gsap.to(profileRef.current, { scale: 1.05, duration: 0.3, ease: "power2.out" });
+        });
+        
+        profileRef.current?.addEventListener('mouseleave', () => {
+          gsap.to(profileRef.current, { scale: 1, duration: 0.3, ease: "power2.out" });
+        });
+      }
     }, heroRef);
 
     return () => ctx.revert();
-  }, []);
-
-  const styles = {
-    hero: {
-      position: "relative",
-      minHeight: "100vh",
-      background:
-        "linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)",
-      backgroundSize: "400% 400%",
-      animation: "gradientShift 15s ease infinite",
-      overflow: "hidden",
-      overflowX: "hidden",
-      display: "flex",
-      alignItems: "center",
-      isolation: "isolate",
-      width: "100%",
-      maxWidth: "100vw",
-    },
-    container: {
-      maxWidth: "1400px",
-      margin: "0 auto",
-      padding: "0 1rem",
-      width: "100%",
-      position: "relative",
-      zIndex: 10,
-      isolation: "isolate",
-      overflow: "hidden",
-      boxSizing: "border-box",
-    },
-    grid: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "2rem",
-      alignItems: "center",
-      minHeight: "85vh",
-      width: "100%",
-      maxWidth: "100%",
-      overflow: "hidden",
-      boxSizing: "border-box",
-    },
-    leftColumn: {
-      textAlign: "left",
-      width: "100%",
-      maxWidth: "100%",
-      overflow: "hidden",
-      boxSizing: "border-box",
-      padding: "0 0.5rem",
-    },
-    profileContainer: {
-      marginBottom: "3rem",
-      position: "relative",
-      width: "100%",
-      display: "flex",
-      justifyContent: "center",
-      overflow: "hidden",
-    },
-    profileWrapper: {
-      position: "relative",
-      display: "inline-block",
-      transform: "scale(0.9)",
-      maxWidth: "100%",
-    },
-    profileGlow: {
-      position: "absolute",
-      inset: "-15px",
-      background:
-        "linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7)",
-      borderRadius: "20px",
-      opacity: 0.6,
-      filter: "blur(25px)",
-      animation: "pulse 3s ease-in-out infinite",
-    },
-    profileImage: {
-      position: "relative",
-      width: "280px",
-      height: "350px",
-      borderRadius: "20px",
-      objectFit: "cover",
-      border: "4px solid rgba(255, 255, 255, 0.3)",
-      boxShadow: "0 25px 50px rgba(0, 0, 0, 0.3)",
-      backdropFilter: "blur(10px)",
-      maxWidth: "100%",
-      aspectRatio: "4/5",
-    },
-    heading: {
-      fontSize: "clamp(2.5rem, 5vw, 4rem)",
-      fontWeight: "bold",
-      color: "#ffffff",
-      marginBottom: "1.5rem",
-      lineHeight: "1.2",
-      fontFamily: "Georgia, serif",
-      letterSpacing: "0.02em",
-      textShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
-    },
-    subheading: {
-      fontSize: "1.3rem",
-      color: "rgba(255, 255, 255, 0.9)",
-      marginBottom: "2.5rem",
-      lineHeight: "1.6",
-      fontFamily: "Inter, sans-serif",
-      fontWeight: "300",
-      maxWidth: "500px",
-      textShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
-    },
-    buttonContainer: {
-      display: "flex",
-      gap: "1.5rem",
-      marginBottom: "2rem",
-      flexWrap: "wrap",
-    },
-    primaryButton: {
-      padding: "1.2rem 2.5rem",
-      background: "linear-gradient(135deg, #667eea, #764ba2)",
-      color: "white",
-      border: "1px solid rgba(255, 255, 255, 0.2)",
-      borderRadius: "15px",
-      fontSize: "1.1rem",
-      fontWeight: "600",
-      cursor: "pointer",
-      boxShadow: "0 10px 30px rgba(102, 126, 234, 0.4)",
-      backdropFilter: "blur(10px)",
-      transition: "all 0.3s ease",
-      opacity: 0,
-      transform: "translateY(50px)",
-    },
-    secondaryButton: {
-      padding: "1.2rem 2.5rem",
-      background: "rgba(255, 255, 255, 0.1)",
-      color: "white",
-      border: "2px solid rgba(255, 255, 255, 0.3)",
-      borderRadius: "15px",
-      fontSize: "1.1rem",
-      fontWeight: "600",
-      cursor: "pointer",
-      backdropFilter: "blur(10px)",
-      transition: "all 0.3s ease",
-      opacity: 0,
-      transform: "translateY(50px)",
-    },
-    chipsContainer: {
-      display: "flex",
-      gap: "0.8rem",
-      flexWrap: "wrap",
-    },
-    chip: {
-      padding: "0.8rem 1.5rem",
-      background: "rgba(255, 255, 255, 0.15)",
-      backdropFilter: "blur(10px)",
-      border: "1px solid rgba(255, 255, 255, 0.2)",
-      borderRadius: "25px",
-      color: "white",
-      fontSize: "0.9rem",
-      fontWeight: "500",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      opacity: 0,
-      transform: "translateY(50px)",
-    },
-    rightColumn: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      overflow: "hidden",
-      width: "100%",
-      maxWidth: "100%",
-      boxSizing: "border-box",
-      padding: "0 0.5rem",
-    },
-    keywordCard: {
-      textAlign: "center",
-      padding: "2.5rem 2rem",
-      background: "rgba(255, 255, 255, 0.08)",
-      backdropFilter: "blur(20px)",
-      borderRadius: "25px",
-      border: "1px solid rgba(255, 255, 255, 0.2)",
-      boxShadow: "0 25px 50px rgba(0, 0, 0, 0.15)",
-      width: "100%",
-      maxWidth: "350px",
-      position: "relative",
-      overflow: "hidden",
-      boxSizing: "border-box",
-    },
-    keywordCardBg: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background:
-        "linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))",
-      borderRadius: "25px",
-    },
-    keywordText: {
-      fontSize: "clamp(2rem, 6vw, 3rem)",
-      fontWeight: "600",
-      background: "linear-gradient(135deg, #ffffff, #f0f0f0)",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent",
-      backgroundClip: "text",
-      marginBottom: "1rem",
-      lineHeight: "1.2",
-      position: "relative",
-      zIndex: 2,
-      letterSpacing: "0.02em",
-    },
-    keywordSubtext: {
-      color: "rgba(255, 255, 255, 0.7)",
-      fontSize: "1rem",
-      fontWeight: "300",
-      position: "relative",
-      zIndex: 2,
-      lineHeight: "1.4",
-      maxWidth: "280px",
-      margin: "0 auto",
-    },
-    backgroundElements: {
-      position: "absolute",
-      inset: 0,
-      pointerEvents: "none",
-      zIndex: 1,
-    },
-    gradientAnimation: `
-      @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-    `,
-    responsive: `
-      @media (max-width: 1200px) {
-        .hero-grid {
-          grid-template-columns: 1fr !important;
-          gap: 2.5rem;
-          text-align: center;
-          overflow: hidden;
-        }
-        .hero-left {
-          text-align: center;
-          padding: 0 !important;
-        }
-        .hero-profile-image {
-          width: 240px !important;
-          height: 300px !important;
-        }
-        .hero-container {
-          padding: 0 1rem !important;
-          overflow: hidden;
-        }
-      }
-
-      @media (max-width: 1024px) {
-        .hero-grid {
-          gap: 2rem;
-          padding: 2rem 0;
-          overflow: hidden;
-          grid-template-columns: 1fr !important;
-        }
-        .hero-profile-image {
-          width: 220px !important;
-          height: 280px !important;
-        }
-        .hero-heading {
-          font-size: clamp(2.2rem, 7vw, 3.5rem) !important;
-        }
-        .hero-container {
-          padding: 0 1rem !important;
-          overflow: hidden;
-        }
-        /* Hide right column */
-        .hero-grid > div:last-child {
-          display: none !important;
-        }
-        .hero-keyword-card {
-          display: none !important;
-        }
-      }
-      
-      @media (max-width: 768px) {
-        .hero-container {
-          padding: 0 1rem;
-          overflow: hidden;
-        }
-        .hero-grid {
-          gap: 1.5rem;
-          padding: 1.5rem 0;
-          overflow: hidden;
-          grid-template-columns: 1fr !important;
-        }
-        .hero-profile-image {
-          width: 200px !important;
-          height: 260px !important;
-        }
-        .hero-heading {
-          font-size: clamp(1.8rem, 8vw, 2.8rem) !important;
-          margin-bottom: 1rem !important;
-        }
-        .hero-subheading {
-          font-size: 1.1rem !important;
-          margin-bottom: 1.5rem !important;
-          line-height: 1.5 !important;
-        }
-        .hero-buttons {
-          flex-direction: column;
-          align-items: center;
-          gap: 1rem;
-          margin-bottom: 1.5rem !important;
-        }
-        .hero-button {
-          width: 100%;
-          max-width: 280px;
-          padding: 1rem 2rem !important;
-        }
-        
-        /* Hide the right column keyword card on small screens */
-        .hero-grid > div:last-child {
-          display: none !important;
-        }
-        .hero-keyword-card {
-          display: none !important;
-        }
-        
-        /* Hide any debug/accessibility overlays */
-        div[class*="accessibility"],
-        div[class*="debug"],
-        div[style*="position: absolute"][style*="bottom"],
-        .hero-container > div:last-child:not(.hero-grid) {
-          display: none !important;
-        }
-      }
-      
-      @media (max-width: 640px) {
-        .hero-container {
-          padding: 0 0.75rem;
-          overflow: hidden;
-        }
-        .hero-grid {
-          gap: 1.2rem;
-          padding: 1rem 0;
-          grid-template-columns: 1fr !important;
-        }
-        .hero-profile-image {
-          width: 180px !important;
-          height: 240px !important;
-        }
-        .hero-heading {
-          font-size: clamp(1.6rem, 9vw, 2.4rem) !important;
-          line-height: 1.1 !important;
-        }
-        .hero-subheading {
-          font-size: 1rem !important;
-          margin-bottom: 1.2rem !important;
-        }
-        .hero-chips {
-          justify-content: center;
-          gap: 0.5rem;
-        }
-        .hero-chip {
-          padding: 0.6rem 1.2rem !important;
-          font-size: 0.8rem !important;
-        }
-        
-        /* Keep right column hidden */
-        .hero-grid > div:last-child {
-          display: none !important;
-        }
-        .hero-keyword-card {
-          display: none !important;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .hero-container {
-          padding: 0 0.5rem;
-          overflow: hidden;
-          position: relative;
-        }
-        .hero-grid {
-          gap: 1rem;
-          padding: 0.5rem 0;
-          grid-template-columns: 1fr !important;
-        }
-        .hero-profile-image {
-          width: 160px !important;
-          height: 220px !important;
-        }
-        .hero-heading {
-          font-size: clamp(1.4rem, 10vw, 2rem) !important;
-          margin-bottom: 0.8rem !important;
-        }
-        .hero-subheading {
-          font-size: 0.9rem !important;
-          margin-bottom: 1rem !important;
-          padding: 0 0.5rem;
-        }
-        .hero-button {
-          max-width: 250px;
-          padding: 0.9rem 1.8rem !important;
-          font-size: 1rem !important;
-        }
-        .hero-chips {
-          gap: 0.4rem;
-        }
-        .hero-chip {
-          padding: 0.5rem 1rem !important;
-          font-size: 0.75rem !important;
-        }
-        
-        /* Ensure right column stays hidden */
-        .hero-grid > div:last-child {
-          display: none !important;
-        }
-        .hero-keyword-card {
-          display: none !important;
-        }
-        
-        /* Force hide any overlay boxes */
-        * {
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-        }
-        
-        [role="generic"],
-        [aria-label],
-        div[style*="position: absolute"]:not(.hero-profile-wrapper):not([class*="hero"]):not([class*="background"]) {
-          display: none !important;
-          visibility: hidden !important;
-          opacity: 0 !important;
-        }
-      }
-
-      @media (max-width: 360px) {
-        .hero-profile-image {
-          width: 140px !important;
-          height: 200px !important;
-        }
-        .hero-heading {
-          font-size: clamp(1.2rem, 11vw, 1.8rem) !important;
-        }
-        .hero-subheading {
-          font-size: 0.85rem !important;
-        }
-        .hero-button {
-          max-width: 220px;
-          padding: 0.8rem 1.5rem !important;
-          font-size: 0.95rem !important;
-        }
-        
-        /* Ensure right column stays hidden */
-        .hero-grid > div:last-child {
-          display: none !important;
-        }
-        .hero-keyword-card {
-          display: none !important;
-        }
-      }
-    `,
-  };
+  }, [prefersReducedMotion, nameLetters]);
 
   return (
-    <>
-      <style>{styles.gradientAnimation}</style>
-      <style>{styles.responsive}</style>
-      <div ref={heroRef} style={styles.hero}>
-        {/* Floating background elements */}
-        <div style={styles.backgroundElements}>
-          {[...Array(15)].map((_, i) => (
-            <div
-              key={i}
-              ref={(el) => (backgroundRef.current[i] = el)}
-              style={{
-                position: "absolute",
-                width:
-                  i % 5 === 0
-                    ? "120px"
-                    : i % 5 === 1
-                    ? "80px"
-                    : i % 5 === 2
-                    ? "60px"
-                    : i % 5 === 3
-                    ? "100px"
-                    : "40px",
-                height:
-                  i % 5 === 0
-                    ? "120px"
-                    : i % 5 === 1
-                    ? "80px"
-                    : i % 5 === 2
-                    ? "60px"
-                    : i % 5 === 3
-                    ? "100px"
-                    : "40px",
-                background:
-                  i % 4 === 0
-                    ? "radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent)"
-                    : i % 4 === 1
-                    ? "radial-gradient(circle, rgba(255, 107, 107, 0.08), transparent)"
-                    : i % 4 === 2
-                    ? "radial-gradient(circle, rgba(78, 205, 196, 0.08), transparent)"
-                    : "radial-gradient(circle, rgba(69, 183, 209, 0.1), transparent)",
-                borderRadius: i % 3 === 0 ? "50%" : "30%",
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                filter: "blur(2px)",
-              }}
-            />
-          ))}
-        </div>
-
-        <div style={styles.container} className="hero-container">
-          <div style={styles.grid} className="hero-grid">
-            {/* Left Column */}
-            <div style={styles.leftColumn} className="hero-left">
-              {/* Profile Photo */}
-              <div style={styles.profileContainer}>
-                <div ref={profileRef} style={styles.profileWrapper}>
-                  <div style={styles.profileGlow}></div>
-                  <img
-                    src="/john-rainford.png"
-                    alt="John Rainford - Strategic Advisor"
-                    style={styles.profileImage}
-                    className="hero-profile-image"
-                  />
-                </div>
-              </div>
-
-              {/* Main Heading */}
-              <h1
-                ref={headingRef}
-                style={styles.heading}
-                className="hero-heading"
-              >
-                Strategic Advisor •<br />
-                Educator •<br />
-                Innovator
-              </h1>
-
-              {/* Subheading */}
-              <p
-                ref={subheadingRef}
-                style={styles.subheading}
-                className="hero-subheading"
-              >
-                Transforming organizations through strategic thinking and
-                innovation leadership. 30+ years driving sustainable growth
-                across industries worldwide.
-              </p>
-
-              {/* CTA Buttons */}
-              <div
-                ref={buttonsRef}
-                style={styles.buttonContainer}
-                className="hero-buttons"
-              >
-                <button
-                  style={styles.primaryButton}
-                  className="hero-button"
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = "translateY(-3px) scale(1.03)";
-                    e.target.style.boxShadow =
-                      "0 15px 40px rgba(102, 126, 234, 0.6)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = "translateY(0) scale(1)";
-                    e.target.style.boxShadow =
-                      "0 10px 30px rgba(102, 126, 234, 0.4)";
-                  }}
-                >
-                  Start a Conversation
-                </button>
-
-                <button
-                  style={styles.secondaryButton}
-                  className="hero-button"
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = "translateY(-3px)";
-                    e.target.style.background = "rgba(255, 255, 255, 0.2)";
-                    e.target.style.borderColor = "rgba(255, 255, 255, 0.5)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = "translateY(0)";
-                    e.target.style.background = "rgba(255, 255, 255, 0.1)";
-                    e.target.style.borderColor = "rgba(255, 255, 255, 0.3)";
-                  }}
-                >
-                  Learn More
-                </button>
-              </div>
-
-              {/* Quick Link Chips */}
-              <div
-                ref={chipsRef}
-                style={styles.chipsContainer}
-                className="hero-chips"
-              >
-                {["About", "Experience", "Portfolio", "Publications"].map(
-                  (item) => (
-                    <button
-                      key={item}
-                      style={styles.chip}
-                      className="hero-chip"
-                      onMouseEnter={(e) => {
-                        e.target.style.transform =
-                          "translateY(-2px) scale(1.05)";
-                        e.target.style.background = "rgba(255, 255, 255, 0.25)";
-                        e.target.style.borderColor = "rgba(255, 255, 255, 0.4)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = "translateY(0) scale(1)";
-                        e.target.style.background = "rgba(255, 255, 255, 0.15)";
-                        e.target.style.borderColor = "rgba(255, 255, 255, 0.2)";
-                      }}
-                    >
-                      {item}
-                    </button>
-                  )
-                )}
-              </div>
+    <div
+      ref={heroRef}
+      className="relative min-h-screen overflow-hidden flex items-center bg-gradient-to-br from-slate-50 via-white to-blue-50/30"
+      aria-label="Hero section introducing John Rainford"
+    >
+      {/* Enhanced background elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.05),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(16,185,129,0.05),transparent_50%)]" />
+      
+      <div className="container mx-auto px-4 lg:px-8 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center min-h-[80vh] py-20 md:py-24">
+          {/* Left Column - Enhanced Content */}
+          <div className="space-y-8 lg:order-1 order-2">
+            {/* Enhanced Badge */}
+            <div 
+              ref={badgeRef}
+              className="inline-flex items-center px-5 py-3 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-blue-500/10 backdrop-blur-sm border border-emerald-400/20 rounded-full text-emerald-600 text-sm font-semibold tracking-wide shadow-lg hover:shadow-xl transition-shadow duration-300"
+            >
+              <span className="w-2.5 h-2.5 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full mr-3 animate-pulse shadow-lg shadow-emerald-400/50"></span>
+              ✨ FRSA • FTLS • Innovation Leader
             </div>
 
-            {/* Right Column - Keyword Card */}
-            <div style={styles.rightColumn}>
-              <div
-                ref={keywordCardRef}
-                style={styles.keywordCard}
-                className="hero-keyword-card"
+            {/* Enhanced Main Heading */}
+            <div ref={headingRef} className="space-y-4 select-none">
+              <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black leading-tight tracking-tight">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 inline-block drop-shadow-sm">
+                  {nameLetters.john.map((ch, i) => (
+                    <span
+                      key={`john-${i}`}
+                      ref={(el) => (nameRefs.current[i] = el)}
+                      className="inline-block will-change-transform hover:scale-110 transition-transform duration-200"
+                    >
+                      {ch}
+                    </span>
+                  ))}
+                </span>
+              </h1>
+              <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black leading-tight tracking-tight">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-cyan-300 to-blue-400 inline-block drop-shadow-sm">
+                  {nameLetters.rainford.map((ch, i) => (
+                    <span
+                      key={`rain-${i}`}
+                      ref={(el) => (nameRefs.current[nameLetters.john.length + i] = el)}
+                      className="inline-block will-change-transform hover:scale-110 transition-transform duration-200"
+                    >
+                      {ch}
+                    </span>
+                  ))}
+                </span>
+              </h1>
+            </div>
+
+            {/* Enhanced Subtitle */}
+            <div ref={subtitleRef} className="space-y-4">
+              <p className="text-xl sm:text-2xl text-slate-600 font-medium leading-relaxed max-w-lg">
+                Strategic Transformation & Innovation Leadership
+              </p>
+              <p className="text-lg text-slate-500 leading-relaxed max-w-xl">
+                Driving digital transformation and sustainable innovation across global enterprises
+              </p>
+            </div>
+
+            {/* Enhanced CTA Buttons */}
+            <div ref={buttonsRef} className="flex flex-wrap gap-4">
+              <button 
+                onClick={() => handleButtonClick('linkedin')}
+                className="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/30 focus:outline-none focus:ring-4 focus:ring-blue-400/30 overflow-hidden"
               >
-                <div style={styles.keywordCardBg}></div>
-                <div style={styles.keywordText} className="keyword-text">
-                  Innovation
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <svg className="w-5 h-5 mr-3 relative z-10" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+                </svg>
+                <span className="relative z-10">Connect on LinkedIn</span>
+                <svg className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              
+              <button 
+                onClick={() => handleButtonClick('profile')}
+                className="group relative inline-flex items-center px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/30 focus:outline-none focus:ring-4 focus:ring-emerald-400/30 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-cyan-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <svg className="w-5 h-5 mr-3 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="relative z-10">View Profile</span>
+                <svg className="w-5 h-5 ml-3 transition-transform group-hover:translate-x-1 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column - Enhanced Profile Image */}
+          <div className="flex justify-center lg:justify-end lg:order-2 order-1">
+            <div ref={profileRef} className="relative cursor-pointer">
+              <div className="relative w-64 h-80 sm:w-72 sm:h-[400px] lg:w-96 lg:h-[500px]">
+                {/* Enhanced glow effect */}
+                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-emerald-400/20 via-cyan-400/20 to-blue-400/20 blur-2xl animate-pulse" />
+                <div className="absolute -inset-2 rounded-2xl bg-gradient-to-br from-emerald-300/30 via-cyan-300/20 to-blue-300/30 blur-xl" />
+                
+                {/* Enhanced image container */}
+                <div className="relative bg-white rounded-3xl p-2 shadow-2xl ring-1 ring-slate-200/50 backdrop-blur-sm">
+                  <img
+                    src="/john-rainford.png"
+                    alt="John Rainford - Strategic Transformation & Innovation Leadership"
+                    className="w-full h-full object-cover rounded-2xl shadow-lg"
+                    loading="eager"
+                  />
+                  <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_65%_35%,rgba(0,0,0,0.03),transparent_70%)] pointer-events-none" />
                 </div>
-                <p style={styles.keywordSubtext}>
-                  Driving transformation through strategic excellence
-                </p>
+
+                {/* Enhanced Status Badge */}
+                <div
+                  ref={keywordCardRef}
+                  className="absolute -bottom-8 -right-8 bg-white/95 backdrop-blur-lg border border-emerald-200/50 rounded-2xl p-6 shadow-2xl hover:shadow-3xl transition-shadow duration-300"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <div className="w-4 h-4 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
+                      <div className="absolute inset-0 w-4 h-4 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full animate-ping opacity-20"></div>
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-slate-800 tracking-wide">
+                        FRSA • FTLS
+                      </p>
+                      <p className="text-sm text-slate-600 font-medium">
+                        Leadership Fellow
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
